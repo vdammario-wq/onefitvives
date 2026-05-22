@@ -431,10 +431,9 @@ function kiesType(type){
   smokeType=type;
   document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('sel'));
   document.querySelector('.type-btn[data-type="'+type+'"]').classList.add('sel');
-  document.getElementById('vragen-sigaretten').classList.add('hidden');
-  document.getElementById('vragen-tabak').classList.add('hidden');
-  document.getElementById('vragen-vape').classList.add('hidden');
-  document.getElementById('vragen-vape-sub').classList.add('hidden');
+  ['v-sigaretten','v-tabak','v-vape','vape-herbruikbaar','vape-wegwerp'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.classList.add('hidden');
+  });
   document.getElementById('v-'+type).classList.remove('hidden');
   document.getElementById('btn-bereken').style.display='block';
 }
@@ -566,9 +565,6 @@ function animeerTellerEind(doel){
 }
 
 window.addEventListener('load', init);
-</script>
-<script>
-if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.warn(e));});}
 </script>
 </body>
 </html>
