@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#e00020">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e00020">
+<title>OneFitVIVES</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--rood:#e00020;--zand:#efeee9;--zwart:#1e1e1e;--wit:#fff;}
+html,body{height:100%;overflow:hidden;font-family:Calibri,'Gill Sans','Trebuchet MS',sans-serif;background:var(--zand);color:var(--zwart);}
+.screen{display:none;height:100vh;flex-direction:column;overflow:hidden;}
+.screen.active{display:flex;}
+.hidden{display:none!important;}
+
+/* HEADER — volle breedte, logo gecentreerd */
+.hdr{background:var(--rood);padding:14px 24px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;gap:6px;}
+.hdr-img{height:44px;display:block;}
+.hdr-sub{font-size:12px;color:var(--zand);letter-spacing:.3px;}
+.logo-txt{display:none;}
+.logo-sub{display:none;}
+
+/* CONTENT AREA */
+.content{flex:1;overflow-y:auto;padding:24px 20px;display:flex;flex-direction:column;gap:20px;}
+
+/* WELKOM */
+.welkom-hero{text-align:center;padding:28px 0 16px;}
+.welkom-title{font-size:22px;font-weight:bold;color:var(--zwart);margin-bottom:10px;}
+.welkom-desc{font-size:15px;color:#555;line-height:1.6;max-width:300px;margin:0 auto;}
+.btn-start{background:var(--rood);color:var(--wit);border:none;border-radius:14px;padding:16px 0;font-size:17px;font-weight:bold;font-family:inherit;cursor:pointer;width:100%;margin-top:8px;box-shadow:0 4px 16px rgba(224,0,32,.25);transition:transform .15s;}
+.btn-start:active{transform:scale(.97);}
+
+/* ENQUÊTE */
+.enq-title{font-size:18px;font-weight:bold;color:var(--rood);margin-bottom:6px;}
+.enq-sub{font-size:13.5px;color:#666;margin-bottom:18px;line-height:1.5;}
+.type-btns{display:flex;gap:10px;margin-bottom:20px;}
+.type-btn{flex:1;padding:14px 8px;border:1.5px solid #ddd;border-radius:12px;background:var(--wit);font-family:inherit;font-size:14px;font-weight:bold;color:#888;cursor:pointer;transition:all .15s;text-align:center;}
+.type-btn.sel{border-color:var(--rood);background:#fff5f5;color:var(--rood);}
+.type-icon{font-size:22px;display:block;margin-bottom:4px;}
+.vragen{background:var(--wit);border-radius:14px;padding:18px;margin-bottom:16px;border:1px solid #ece9e2;}
+.fg{margin-bottom:14px;}
+.fg:last-child{margin-bottom:0;}
+.fl{display:block;font-size:13.5px;font-weight:bold;margin-bottom:6px;color:var(--zwart);}
+.fl-hint{font-size:12px;color:#888;font-weight:normal;}
+input[type="number"]{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:9px;font-family:inherit;font-size:15px;background:#f9f8f5;-webkit-appearance:none;}
+input:focus{outline:none;border-color:var(--rood);background:var(--wit);}
+.vapesub-btns{display:flex;gap:8px;margin-bottom:14px;}
+.vapesub-btn{flex:1;padding:10px 6px;border:1.5px solid #ddd;border-radius:10px;background:var(--wit);font-family:inherit;font-size:13px;font-weight:bold;color:#888;cursor:pointer;text-align:center;}
+.vapesub-btn.sel{border-color:var(--rood);background:#fff5f5;color:var(--rood);}
+
+/* DAGSCHERM */
+.dag-hdr{padding:12px 20px 10px;background:var(--rood);flex-shrink:0;}
+.dag-num{font-size:14px;font-weight:bold;color:rgba(255,255,255,.85);margin-bottom:8px;}
+.prog-wrap{display:flex;align-items:center;gap:10px;}
+.prog-bg{flex:1;height:6px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--wit);border-radius:3px;transition:width .5s;}
+.prog-pct{font-size:12px;color:rgba(255,255,255,.75);min-width:30px;text-align:right;}
+.kaarten{flex:1;position:relative;overflow:hidden;}
+.kaart{position:absolute;inset:0;display:none;flex-direction:column;padding:24px 20px;gap:16px;}
+.kaart.active{display:flex;}
+.kaart-label{font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:.8px;color:#aaa;}
+.kaart.mijlpaal .kaart-label{color:var(--rood);}
+.k-quote-dag{font-size:13px;font-weight:bold;color:var(--rood);margin-bottom:4px;}
+.k-quote-tekst{font-size:18px;line-height:1.6;color:var(--zwart);flex:1;display:flex;align-items:center;}
+.k-wet-icon{font-size:36px;margin-bottom:4px;}
+.k-wet-tekst{font-size:15px;line-height:1.7;color:var(--zwart);flex:1;}
+.besparing-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+.besparing-label{font-size:14px;color:#888;}
+.besparing-bedrag{font-size:52px;font-weight:bold;color:var(--rood);letter-spacing:-1px;}
+.besparing-hint{font-size:13px;color:#aaa;text-align:center;margin-top:4px;}
+.dag-nav{padding:12px 20px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.nav-btn{width:48px;height:48px;border-radius:50%;border:1.5px solid #ddd;background:var(--wit);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.nav-btn:active{background:var(--zand);}
+.dots{display:flex;gap:8px;}
+.dot{width:8px;height:8px;border-radius:50%;background:#ddd;transition:all .2s;}
+.dot.act{background:var(--rood);width:20px;border-radius:4px;}
+
+/* EINDSCHERM */
+.eind-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;gap:20px;}
+.eind-icon{font-size:64px;}
+.eind-title{font-size:26px;font-weight:bold;color:var(--rood);}
+.eind-sub{font-size:15px;color:#555;line-height:1.6;}
+.eind-teller-wrap{background:var(--wit);border-radius:16px;padding:24px;width:100%;border:2px solid var(--rood);}
+.eind-teller-lbl{font-size:13px;color:#888;margin-bottom:6px;}
+.eind-teller{font-size:48px;font-weight:bold;color:var(--rood);}
+.footer{background:var(--rood);padding:8px 16px;text-align:center;flex-shrink:0;}
+.footer p{font-size:11px;color:rgba(255,255,255,.75);letter-spacing:.2px;}
+</style>
+</head>
+<body>
+
+<!-- WELKOM -->
+<div class="screen" id="s-welkom">
+  <div class="hdr">
+    <img src="data:image/png;base64,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" alt="OneFitVIVES" class="hdr-img">
+    <div class="hdr-sub">Rookstopchallenge by VIVES</div>
+  </div>
+  <div class="content">
+    <div class="welkom-hero">
+      <div class="welkom-title">Klaar om te stoppen?</div>
+      <div class="welkom-desc">84 dagen. Dag per dag. Met een motivatiequote, wetenschappelijk bewijs en inzicht in wat je bespaart. Jij kan dit.</div>
+    </div>
+    <button class="btn-start" onclick="startApp()">Ik start vandaag</button>
+    <div class="footer"><p>Made by M. Van Dam &mdash; VIVES Hogeschool</p></div>
+</div>
+</div>
+
+<!-- ENQUÊTE -->
+<div class="screen" id="s-type">
+  <div class="hdr">
+    <img src="data:image/png;base64,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" alt="OneFitVIVES" class="hdr-img">
+    <div class="hdr-sub">Rookstopchallenge by VIVES</div>
+  </div>
+  <div class="content">
+    <div>
+      <div class="enq-title">Wat rook je?</div>
+      <div class="enq-sub">Zo berekenen we hoeveel je bespaart. Dit wordt nergens naartoe gestuurd — enkel op jouw gsm opgeslagen.</div>
+      <div class="type-btns">
+        <button class="type-btn" data-type="sigaretten" onclick="kiesType('sigaretten')"><span class="type-icon">🚬</span>Sigaretten</button>
+        <button class="type-btn" data-type="tabak" onclick="kiesType('tabak')"><span class="type-icon">🍂</span>Tabak</button>
+        <button class="type-btn" data-type="vape" onclick="kiesType('vape')"><span class="type-icon">💨</span>Vape</button>
+      </div>
+    </div>
+    <div class="vragen hidden" id="v-sigaretten">
+      <div class="fg"><label class="fl">Wat kost jouw pakje? <span class="fl-hint">(in euro)</span></label><input type="number" id="sig-prijs" placeholder="Bv. 9.50" inputmode="decimal" step="0.01"></div>
+      <div class="fg"><label class="fl">Hoeveel sigaretten zitten in een pakje?</label><input type="number" id="sig-aantal" placeholder="Bv. 20" inputmode="numeric"></div>
+      <div class="fg"><label class="fl">Hoeveel sigaretten rook je per dag?</label><input type="number" id="sig-perdag" placeholder="Bv. 10" inputmode="numeric"></div>
+    </div>
+    <div class="vragen hidden" id="v-tabak">
+      <div class="fg"><label class="fl">Wat kost jouw zakje + blaadjes + filters? <span class="fl-hint">(in euro)</span></label><input type="number" id="tab-prijs" placeholder="Bv. 18.00" inputmode="decimal" step="0.01"></div>
+      <div class="fg"><label class="fl">Hoeveel dagen doe je er gemiddeld mee?</label><input type="number" id="tab-dagen" placeholder="Bv. 7" inputmode="numeric"></div>
+    </div>
+    <div class="vragen hidden" id="v-vape">
+      <div class="enq-sub" style="margin-bottom:12px;">Welk type vape gebruik je?</div>
+      <div class="vapesub-btns">
+        <button class="vapesub-btn" data-sub="herbruikbaar" onclick="kiesVapeSub('herbruikbaar')">Herbruikbaar</button>
+        <button class="vapesub-btn" data-sub="wegwerp" onclick="kiesVapeSub('wegwerp')">Wegwerp</button>
+      </div>
+      <div id="vape-herbruikbaar" class="hidden">
+        <div class="fg"><label class="fl">Wat kost vapen je per week? <span class="fl-hint">(vloeistof, coils)</span></label><input type="number" id="vape-h-week" placeholder="Bv. 14.00" inputmode="decimal" step="0.01"></div>
+      </div>
+      <div id="vape-wegwerp" class="hidden">
+        <div class="fg"><label class="fl">Wat kost jouw wegwerpvape?</label><input type="number" id="vape-w-prijs" placeholder="Bv. 8.00" inputmode="decimal" step="0.01"></div>
+        <div class="fg"><label class="fl">Hoeveel dagen doe je ermee?</label><input type="number" id="vape-w-dagen" placeholder="Bv. 3" inputmode="numeric"></div>
+      </div>
+    </div>
+    <button class="btn-start" id="btn-bereken" style="display:none;" onclick="berekenEnStart()">Start mijn 84 dagen</button>
+    <div class="footer"><p>Made by M. Van Dam &mdash; VIVES Hogeschool</p></div>
+</div>
+</div>
+
+<!-- DAGSCHERM -->
+<div class="screen" id="s-dag">
+  <div class="hdr">
+    <img src="data:image/png;base64,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" alt="OneFitVIVES" class="hdr-img">
+    <div class="hdr-sub">Rookstopchallenge by VIVES</div>
+  </div>
+  <div class="dag-hdr">
+    <div class="dag-num" id="dag-num">Dag 1 van 84</div>
+    <div class="prog-wrap">
+      <div class="prog-bg"><div class="prog-fill" id="prog-bar" style="width:0%"></div></div>
+      <div class="prog-pct" id="prog-pct">0%</div>
+    </div>
+  </div>
+  <div class="kaarten">
+    <div class="kaart" id="k-quote">
+      <div class="kaart-label">Motivatie</div>
+      <div id="q-dag" class="k-quote-dag"></div>
+      <div id="q-tekst" class="k-quote-tekst"></div>
+    </div>
+    <div class="kaart" id="k-wetenschap">
+      <div class="kaart-label">Wetenschap</div>
+      <div class="k-wet-icon">🔬</div>
+      <div id="w-tekst" class="k-wet-tekst"></div>
+    </div>
+    <div class="kaart" id="k-besparing">
+      <div class="kaart-label">Bespaard</div>
+      <div class="besparing-wrap">
+        <div class="besparing-label">Jij hebt al bespaard</div>
+        <div class="besparing-bedrag" id="teller-bedrag">0,00€</div>
+        <div class="besparing-hint">Ten opzichte van vroeger</div>
+      </div>
+    </div>
+  </div>
+  <div class="dag-nav">
+    <button class="nav-btn" onclick="vorige()">&#8592;</button>
+    <div class="dots"><div class="dot act"></div><div class="dot"></div><div class="dot"></div></div>
+    <button class="nav-btn" onclick="volgende()">&#8594;</button>
+    <div class="footer"><p>Made by M. Van Dam &mdash; VIVES Hogeschool</p></div>
+</div>
+</div>
+
+<!-- EINDSCHERM -->
+<div class="screen" id="s-eind">
+  <div class="hdr">
+    <img src="data:image/png;base64,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" alt="OneFitVIVES" class="hdr-img">
+    <div class="hdr-sub">Rookstopchallenge by VIVES</div>
+  </div>
+  <div class="eind-content">
+    <div class="eind-icon">🏆</div>
+    <div class="eind-title">84 dagen voltooid!</div>
+    <div class="eind-sub">Jij bent een OneFitter. Je longen, je hart, je hoofd — ze danken je. Dit is niet het einde. Dit is wie jij nu bent.</div>
+    <div class="eind-teller-wrap">
+      <div class="eind-teller-lbl">Totaal bespaard</div>
+      <div class="eind-teller" id="eind-teller">0,00€</div>
+    </div>
+    <div class="eind-sub" style="font-size:13px;color:#aaa;">De besparing loopt verder elke dag dat jij rookvrij blijft.</div>
+  </div>
+</div>
+
+<script>
+// ═══ DATA ════════════════════════════════════════════════════
+
+const QUOTES = [
+"Dag één. Het moedigste wat je vandaag doet, is beginnen.",
+"Elk uur zonder sigaret is een overwinning die telt.",
+"Je lichaam begint al te herstellen. Dag drie is zwaar — maar jij bent zwaarder.",
+"Het verlangen duurt gemiddeld drie minuten. Drie minuten. Jij kunt dat.",
+"Vijf dagen. Je longen ademen al makkelijker dan je denkt.",
+"Cravings zijn golven. Golven gaan altijd voorbij.",
+"WEEK 1 VOLTOOID! Je hebt bewezen dat je sterker bent dan de gewoonte.",
+"Week twee: het moeilijkste ligt achter je. Ga door.",
+"Denk niet aan alle volgende dagen. Denk alleen aan vandaag.",
+"Tien dagen rookvrij. Dat is geen toeval — dat is jouw keuze, elke dag opnieuw.",
+"Je smaak- en reukzin worden scherper. De wereld geeft je al wat terug.",
+"Twaalf dagen. Je bent al verder dan de meeste mensen ooit komen.",
+"Als het zwaar voelt, herinner jezelf: je bent niet zwak. Je bent aan het groeien.",
+"TWEE WEKEN! Kijk eens hoe ver je al bent gekomen. Je longen, je hart, je hoofd — ze danken je.",
+"Halverwege week drie. De gewoonte verliest zijn grip. Jij wint.",
+"Elke dag is een nieuwe reden om trots op jezelf te zijn.",
+"Zestien procent van de mensen haalt dag veertien. Jij bent er al voorbij.",
+"Je slaapt beter, je ademt beter, je voelt je beter. Merk je het al?",
+"Negentien dagen. Je bent geen roker meer — je bent iemand die gestopt is.",
+"Twintig dagen. Wie had dat gedacht? Jij. Want jij geloofde in jezelf.",
+"DRIE WEKEN! Wat drie weken volhouden doet: het herdraadt letterlijk je brein.",
+"Week vier. Bijna een maand. Dat is iets om te vieren.",
+"De zin in een sigaret zal afnemen. Het is geen kwestie van als — maar wanneer.",
+"Vierentwintig dagen sterker. Dat is jij.",
+"Als de dag moeilijk is, vraag je af: hoeveel hou ik van mijn toekomst?",
+"Je huid, je haar, je energie — ze veranderen. Van binnenuit.",
+"Zevenentwintig dagen. Je hebt het ver gebracht. Geen terugkeer meer.",
+"VIER WEKEN — ÉÉN MAAND! Een hele maand rookvrij. Je hebt jezelf bewezen dat je groter bent dan elke verslaving.",
+"Maand twee begint. Het wordt makkelijker — dat beloven we.",
+"Dertig dagen. Je hebt dertig keer nee gezegd en ja tegen jezelf.",
+"Je bloeddruk daalt. Je hart werkt rustiger. Je lichaam herstelt zich.",
+"Tweeëndertig dagen. De gewoonte is gebroken. De vrijheid begint.",
+"Als je een moeilijk moment hebt: adem in, tel tot drie, adem uit. Jij hebt dit al 33 dagen gedaan.",
+"Je bent nu sterker dan de meeste mensen ooit worden op dit vlak.",
+"VIJF WEKEN! Je longen hebben je al vergeven. Nu mag jij ook jezelf vergeven voor alles ervoor.",
+"Zes weken is dichtbij. Je bent bijna op het punt waarop cravings zeldzaam worden.",
+"Je neus ruikt bloemen weer. Je tong proeft koffie weer. Welkom terug.",
+"Elke dag zonder sigaret is een dag gewonnen van de toekomst.",
+"De verslaving roept nog soms — maar je kiest niet meer op te nemen.",
+"Veertig dagen! Veertig is in veel culturen het getal van transformatie. Toepasselijk.",
+"Eenenveertig dagen. Je bent een nieuwe persoon aan het worden — en die rookt niet.",
+"ZES WEKEN! Zes weken geleden was dit misschien een droom. Vandaag is het je realiteit.",
+"Drieënveertig dagen. Kom je vrienden al tegen die zeggen dat je er beter uitziet?",
+"Je longcapaciteit groeit. Trappen lopen, fietsen, sporten — alles wordt lichter.",
+"Vijfenveertig dagen. Halverwege de grote uitdaging. Maar jij stopt niet.",
+"Zesenveertig dagen. Je brein maakt eindopnames van de oude gewoonte. Ze worden vager.",
+"Als je vandaag aan een sigaret denkt: het is een herinnering, geen behoefte.",
+"Achtenveertig dagen. Vijf weken lang élke dag de juiste keuze gemaakt.",
+"ZEVEN WEKEN! Zeven is het getal van voltooiing. Jij vult het in met moed en doorzetting.",
+"Vijftig dagen! Een ronde mijlpaal. Vijftig keer wakker geworden als iemand die kiest voor gezondheid.",
+"Je risico op een hartaanval is al significant gedaald. Je hart klopt voor jou.",
+"Tweeënvijftig dagen. Bijna twee maanden. Dat vraagt karakter — en jij hebt dat.",
+"Je hoeft het niet perfect te doen. Je hoeft het alleen maar vol te houden.",
+"Vierenvijftig dagen. Elke dag maakt de vrijheid groter.",
+"Vijfenvijftig dagen. Jouw lichaam is een machine die zichzelf repareert. En jij laat het.",
+"ACHT WEKEN — TWEE MAANDEN! Dit is geen detail in je leven — dit is een hoofdstuk.",
+"Zevenenvijftig dagen. De cravings worden zeldzamer. De rust neemt toe.",
+"Je huid is helderder. Je ogen glinsteren meer. Anderen zien het al.",
+"Negenenvijftig dagen. Morgen is zestig. Maar vandaag is het enige dat telt.",
+"Zestig dagen! Twee maanden vol kracht. Kijk eens terug — hoe ver ben je gekomen?",
+"Eenenzestig dagen. Je bent voorbij het punt waarop de meeste mensen opgeven.",
+"Tweeënzestig dagen. Bijna bij het derde mijlpaal. Maar jij bent er al.",
+"NEGEN WEKEN! Negen weken van groei, van ademhalen, van leven.",
+"Vierenzestig dagen. Je longvliesjes herstellen zich. Elke ademhaling is frischer.",
+"Vijfenzestig dagen. Rook jij nog? Nee. Ben jij een niet-roker? Ja.",
+"Zesenzestig dagen. De gewoonte bestaat niet meer — alleen de herinnering eraan.",
+"Zevenzestig dagen. Je hebt meer dan twee maanden bewezen dat jij de baas bent.",
+"Achtenzestig dagen. Denk aan alles wat je dit jaar kunt doen met meer energie.",
+"Negenenzestig dagen. Elk moment vandaag telt.",
+"TIEN WEKEN — 70 DAGEN! Zeventig dagen van jouw wil, jouw keuze, jouw kracht.",
+"Eenenzeventig dagen. Het risico op kanker daalt elk jaar dat je rookvrij bent.",
+"Tweeënzeventig dagen. Je bent bijna drie maanden ver. Drie maanden!",
+"Drieënzeventig dagen. Bijna aan de finish van het eerste kwartaal rookvrij.",
+"Vierenzeventig dagen. Jij telt niet af — jij telt op.",
+"Vijfenzeventig dagen. Maar dag 84 is al fenomenaal.",
+"Zesenzeventig dagen. Je ziet de finish. Maar eigenlijk is er geen finish — alleen een nieuw begin.",
+"ELF WEKEN! Nog één week en je hebt dit volledig volgehouden.",
+"Achtenzeventig dagen. Laatste rechte lijn. Maar onthoud: dit stopt niet op dag 84.",
+"Negenzeventig dagen. Vijf meer. Je kunt dit — je doet dit al 79 dagen.",
+"Tachtig dagen! Tachtig keer gekozen voor jezelf. Dat is liefde voor jezelf in actie.",
+"Eenentachtig dagen. Drie meer. Maar vandaag is het enige dat telt.",
+"Tweeëntachtig dagen. Je bent een inspiratie — ook al weet je het misschien niet.",
+"Drieëntachtig dagen. Morgen is de grote dag. Maar vandaag ben je al geweldig.",
+"DAG 84! Vierentachtig dagen rookvrij. Dit is niet het einde — dit is wie jij nu bent."
+];
+
+const WETENSCHAP = [
+"Na 20 minuten daalt je bloeddruk al en worden je handen en voeten warmer doordat de bloedvaten zich ontspannen.",
+"Het koolstofmonoxide in je bloed is volledig verdwenen. Je bloed transporteert nu weer optimale zuurstof naar alle organen.",
+"Het nicotine is volledig uit je lichaam. De acute ontwenning bereikt vandaag haar hoogtepunt — daarna wordt het beter.",
+"Je bronchiën beginnen te ontspannen. De spiertjes rond de luchtwegen lossen hun kramp op, waardoor je longcapaciteit toeneemt.",
+"De trilhaarcellen in je luchtpijp herstellen zich — microscopische haartjes die slijm en vuil afvoeren na jaren van nicotineverlamming.",
+"Je smaakpapillen beginnen gevoeliger te worden. De beschadigde zenuwuiteinden op je tong regenereren zich actief.",
+"Na één week is de kans op een succesvolle rookstop negen keer groter. Je hersenen beginnen dopaminereceptoren aan te passen.",
+"Je reukzin keert terug. De zenuwvezels in je neusslijmvlies, beschadigd door tabaksrook, beginnen te regenereren.",
+"Je longciliën zijn voldoende hersteld om actief bacteriën en stofdeeltjes af te voeren. Je immuunsysteem in de luchtwegen versterkt zich.",
+"De nicotine-afhankelijkheidsreceptoren in je hersenen nemen in aantal af. Je brein normaliseert zijn beloningssysteem.",
+"Je bloedplaatjes worden minder plakkerig. Roken maakt bloedplaatjes kleveriger — na elf dagen keert dit terug naar normaal.",
+"De bloedcirculatie in je tandvlees verbetert merkbaar. Nicotine vernauwd de bloedvaten in de mond sterk.",
+"Je huid krijgt meer zuurstof. De microcirculatie herstelt, huidcellen worden beter gevoed en de teint wordt helderder.",
+"Na twee weken is het risico op een hartaanval merkbaar gedaald. Bloedvaten zijn soepeler, bloeddruk stabieler, hartritme regelmatiger.",
+"Je longvolume neemt toe. De chronische ontsteking in de kleine luchtwegen begint af te nemen.",
+"De productie van overtollig slijm in je luchtwegen daalt. Rokers maken structureel meer slijm aan als beschermingsmechanisme.",
+"Je immuuncellen in de longen worden actiever. Deze afweercellen waren door tabaksrook verzwakt.",
+"Je energieniveau stijgt door betere zuurstofopname. Elke cel in je lichaam krijgt meer brandstof.",
+"Het risico op een herseninfarct begint te dalen. Roken is een van de grootste risicofactoren voor beroerte.",
+"Je coronaire bloedvaten zijn soepeler geworden. De endotheelcellen die de binnenwand vormen, herstellen hun functie.",
+"Neurowetenschappelijk onderzoek toont: na 21 dagen zijn de neurale circuits die het rookgedrag stuurden, merkbaar verzwakt.",
+"De elasticiteit van je longweefsel neemt toe. Longen blootgesteld aan irriterende stoffen worden soepeler en efficiënter.",
+"Je alvleesklier functioneert beter. Roken verstoort de insulineproductie — na drie weken normaliseert de insulinegevoeligheid.",
+"De trilhaarcellen in je neus functioneren opnieuw optimaal. Bacteriën worden efficiënter gefilterd voor ze de longen bereiken.",
+"Je cortisolspiegels normaliseren. Roken verhoogt paradoxaal de chronische stress — ondanks het gevoel van ontspanning.",
+"De doorbloeding van je vingers en tenen is significant verbeterd. Het risico op perifeer vaatlijden daalt.",
+"Je nieren filteren het bloed efficiënter. Tabaksrook beschadigt de kleine bloedvaatjes in de nieren.",
+"Na één maand is de longfunctie meetbaar verbeterd. Ex-rokers hebben na vier weken gemiddeld 5 tot 10% meer longcapaciteit.",
+"Je maagwand herstelt zich. Roken stimuleert overmatige maagzuurproductie en verzwakt het slijmvlies.",
+"Het aantal witte bloedcellen normaliseert. Roken veroorzaakt chronische lichte ontsteking — dit daalt nu naar normale waarden.",
+"Je ogen profiteren mee. De doorbloeding van het netvlies verbetert — het risico op maculadegeneratie daalt.",
+"Je botten beginnen te profiteren. Roken vermindert de botdichtheid — ex-rokers tonen al licht herstel.",
+"De grijze stof in je hersenen blijft beter bewaard. Roken versnelt het verlies van grijze stof in de prefrontale cortex.",
+"Je voortplantingscellen worden gezonder. Roken beschadigt DNA in spermacellen en eicellen — na een maand is er al verbetering.",
+"Na vijf weken is de acetylcholinereceptordichtheid in je hersenen gedaald naar niveaus vergelijkbaar met niet-rokers.",
+"Je lever werkt efficiënter. De belasting van het afbreken van giftige tabaksstoffen is significant verminderd.",
+"De slijmvliezen van je luchtwegen zijn dunner en gezonder. Het overmatige slijmlaag is grotendeels verdwenen.",
+"Je huid produceert meer collageen. Roken remt collageensynthese — een van de redenen waarom rokers sneller rimpels krijgen.",
+"Je perifere zenuwen herstellen. Nicotine beschadigt kleine zenuwvezels in handen en voeten — na vijf weken is er meetbare verbetering.",
+"Je lymfestelsel werkt efficiënter. Tabaksrook belast het lymfestelsel sterk — na veertig dagen is de toxische belasting sterk verminderd.",
+"De slijmvliezen van je mond en keel zijn significant hersteld. Het risico op mond- en keelkanker begint te dalen.",
+"Na zes weken is de craving-intensiteit bij de meeste ex-rokers met meer dan 50% afgenomen — meetbaar in de hersenen.",
+"Je bloedsuikerspiegel is stabieler. Roken veroorzaakt insulineresistentie — na zes weken is de insulinegevoeligheid aanzienlijk verbeterd.",
+"De trilhaarcellen in je bronchiën zijn volledig functioneel. Ze verplaatsen slijm tien keer efficiënter dan bij actieve rokers.",
+"Je risico op diepveneuze trombose daalt. Roken maakt het bloed dikker en bevordert stolselvorming in de aderen.",
+"Je hartspier is sterker. De chronische zuurstofbeperking door koolstofmonoxide is opgeheven — het hart pompt efficiënter.",
+"De neurotransmitterbalans in je hersenen herstelt. Dopamine, serotonine en noradrenaline normaliseren hun basisniveaus.",
+"Je eetlust en spijsvertering stabiliseren. Nicotine onderdrukte de eetlust via de hypothalamus — dit is nu volledig genormaliseerd.",
+"Na zeven weken is de regeneratie van de bronchiale epitheelcellen grotendeels voltooid. Beschadigde cellen zijn vervangen door gezonde.",
+"Je zenuwstelsel is stabieler. De onrust en concentratieproblemen van de eerste weken zijn voor de meeste ex-rokers verdwenen.",
+"Je risico op een tweede hartaanval daalt sterk. Rookstop is het sterkste preventieve middel na een hartinfarct.",
+"De microbloedvaten in je huid zijn volledig hersteld. Je huid heeft dezelfde capillaire doorbloeding als bij een niet-roker.",
+"Je immuunsysteem is aanzienlijk sterker. Natural killer cells — die virale infecties en kankercellen bestrijden — zijn actiever.",
+"De elastische vezels in je longweefsel herstellen zich. Emfyseem stopt met vorderen zodra je stopt met roken.",
+"Je oogdruk normaliseert. Roken verhoogt het risico op glaucoom — na acht weken rookstop is dit risico verminderd.",
+"Na twee maanden toont longfunctieonderzoek een gemiddelde verbetering van 10 tot 15% bij ex-rokers met chronische bronchitis.",
+"Je tong is volledig hersteld. De smaakpapillen zijn geregenereerd en functioneren zoals bij een niet-roker.",
+"De lymfeklieren in je longen worden ontlast. De afzetting van teerdeeltjes in de lymfeklieren begint te verminderen.",
+"Je DNA herstelt zich actief. Het lichaam heeft reparatiemechanismen — DNA-repair enzymen — die nu volop actief zijn.",
+"Het risico op longontsteking daalt. De verbeterde mucociliaire klaring beschermt je nu efficiënt.",
+"Je bloedviscositeit is normaal. Dikker bloed door roken is een risicofactor voor hartinfarcten en beroertes.",
+"De regeneratie van het maagdarmkanaal is grotendeels voltooid. Slokdarm, maag en dunne darm zijn aanzienlijk hersteld.",
+"Negen weken na de rookstop toont hersenonderzoek dat de reactie op visuele rookprikkels significant is afgezwakt.",
+"Je wondgenezing is aanzienlijk verbeterd. Roken vertraagt genezing door verminderde zuurstoftoevoer en remming van collageenvorming.",
+"Het risico op prematuur overlijden aan een hartziekte is al met 50% gedaald ten opzichte van actieve rokers.",
+"Je schildklier functioneert beter. Thiocyanaat in tabaksrook blokkeert de jodiumopname — dit is nu volledig opgeheven.",
+"De nierfunctie is meetbaar verbeterd. De glomerulaire filtratiesnelheid — hoe efficiënt je nieren filteren — is teruggekeerd naar normaal.",
+"Je hartritme is regelmatiger. Roken veroorzaakt atriumfibrilleren — onregelmatige hartslag — dit risico daalt snel bij rookstop.",
+"Je endocriene systeem functioneert efficiënter. Roken verstoort het hormonale evenwicht in meerdere systemen.",
+"Na 70 dagen is het risico op beroerte significant gedaald. Na 2 tot 4 jaar is het gelijk aan dat van een niet-roker.",
+"De regeneratie van je neusslijmvlies is voltooid. De beschermende functie van je neus is volledig hersteld.",
+"Je slijmvliescellen van baarmoederhals en prostaat herstellen zich. Het kankerrisico daalt bij rookstop.",
+"De zenuwuiteinden in je vingertoppen zijn gevoeliger. De perifere neuropathie door roken herstelt zich actief.",
+"Je slaapkwaliteit is significant beter. Nicotine verstoorde de slaapcyclus — na tien weken is de slaap dieper en herstellender.",
+"Het risico op grauwe staar daalt. Roken verhoogt het cataractrisico met 40% — de oxidatieve stress in de ooglens normaliseert.",
+"Je alvleesklier heeft zich hersteld. Het risico op pancreaskanker — een van de meest dodelijke kankers — daalt significant.",
+"Na elf weken is de cholesterolbalans verbeterd. HDL (goed cholesterol) is gestegen, LDL (slecht) is gedaald.",
+"Je immuunrespons op vaccins is sterker. Rokers reageren minder goed op vaccins — ex-rokers tonen al een sterk verbeterde respons.",
+"De regeneratie van het longepitheel is voor meer dan 80% voltooid. Je luchtwegen bestaan bijna volledig uit nieuwe, gezonde cellen.",
+"Je bloedvaten zijn functioneel tien jaar jonger geworden. Endotheelfunctie keert terug naar het niveau van iemand tien jaar jonger.",
+"Het risico op nierfalen daalt. Na drie maanden rookstop is de nierfiltratie meetbaar verbeterd.",
+"Je hersenen zijn groter. Roken versnelt het verlies van hersenschorsvolume — bij ex-rokers is dit gestopt en begint licht herstel.",
+"De epigenetische veranderingen door roken beginnen te normaliseren. DNA-methylatiepatronen die door roken werden veranderd, herstellen zich.",
+"Na drie maanden is het risico op een fataal hartinfarct gehalveerd. Je longfunctie verbeterde met 10 tot 20%. Het risico op 14 soorten kanker is al meetbaar gedaald. Na vijf jaar is je beroerterisico gelijk aan dat van een niet-roker."
+];
+
+const MIJLPALEN = [7,14,21,28,35,42,49,56,63,70,77,84];
+
+function getStartDate(){ const v=localStorage.getItem('ofv_start'); return v?new Date(v):null; }
+function getPricePerDay(){ return parseFloat(localStorage.getItem('ofv_ppd')||'0'); }
+function getCurrentDay(){
+  const s=getStartDate();
+  if(!s) return 1;
+  const diff=Math.floor((new Date()-s)/86400000)+1;
+  return Math.max(1,diff);
+}
+function isMijlpaal(d){ return MIJLPALEN.includes(d); }
+function formatEuro(n){ return n.toFixed(2).replace('.',',')+'€'; }
+
+// ═══ APP STATE ═══════════════════════════════════════════════
+let currentCard=0; // 0=quote 1=wetenschap 2=besparing
+let smokeType='';
+
+function init(){
+  const started=localStorage.getItem('ofv_started');
+  if(!started){
+    showScreen('s-welkom');
+  } else {
+    showDagscherm();
+  }
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);
+  if(el) el.classList.add('active');
+}
+
+function startApp(){
+  showScreen('s-type');
+}
+
+function kiesType(type){
+  smokeType=type;
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('sel'));
+  document.querySelector('.type-btn[data-type="'+type+'"]').classList.add('sel');
+  document.getElementById('vragen-sigaretten').classList.add('hidden');
+  document.getElementById('vragen-tabak').classList.add('hidden');
+  document.getElementById('vragen-vape').classList.add('hidden');
+  document.getElementById('vragen-vape-sub').classList.add('hidden');
+  document.getElementById('v-'+type).classList.remove('hidden');
+  document.getElementById('btn-bereken').style.display='block';
+}
+
+function kiesVapeSub(sub){
+  document.querySelectorAll('.vapesub-btn').forEach(b=>b.classList.remove('sel'));
+  document.querySelector('.vapesub-btn[data-sub="'+sub+'"]').classList.add('sel');
+  document.getElementById('vape-herbruikbaar').classList.add('hidden');
+  document.getElementById('vape-wegwerp').classList.add('hidden');
+  document.getElementById('vape-'+sub).classList.remove('hidden');
+}
+
+function berekenEnStart(){
+  let ppd=0;
+  if(smokeType==='sigaretten'){
+    const pakjePrijs=parseFloat(document.getElementById('sig-prijs').value.replace(',','.'))||0;
+    const sigPerPakje=parseFloat(document.getElementById('sig-aantal').value)||20;
+    const sigPerDag=parseFloat(document.getElementById('sig-perdag').value)||0;
+    const pps=sigPerPakje>0?pakjePrijs/sigPerPakje:0;
+    ppd=pps*sigPerDag;
+  } else if(smokeType==='tabak'){
+    const totaal=parseFloat(document.getElementById('tab-prijs').value.replace(',','.'))||0;
+    const dagen=parseFloat(document.getElementById('tab-dagen').value)||1;
+    ppd=totaal/dagen;
+  } else if(smokeType==='vape'){
+    const sub=document.querySelector('.vapesub-btn.sel')?.dataset.sub;
+    if(sub==='herbruikbaar'){
+      const week=parseFloat(document.getElementById('vape-h-week').value.replace(',','.'))||0;
+      ppd=week/7;
+    } else if(sub==='wegwerp'){
+      const prijs=parseFloat(document.getElementById('vape-w-prijs').value.replace(',','.'))||0;
+      const dagen=parseFloat(document.getElementById('vape-w-dagen').value)||1;
+      ppd=prijs/dagen;
+    }
+  }
+  localStorage.setItem('ofv_ppd', ppd.toFixed(4));
+  localStorage.setItem('ofv_start', new Date().toISOString());
+  localStorage.setItem('ofv_started', '1');
+  showDagscherm();
+}
+
+function showDagscherm(){
+  const dag=getCurrentDay();
+  if(dag>84){
+    showEindscherm();
+    return;
+  }
+  currentCard=0;
+  toonKaart(dag,0);
+  showScreen('s-dag');
+}
+
+function toonKaart(dag,kaart){
+  const idx=dag-1;
+  const ppd=getPricePerDay();
+  const bespaard=dag*ppd;
+  const mijl=isMijlpaal(dag);
+
+  // Dag indicator
+  document.getElementById('dag-num').textContent='Dag '+dag+' van 84';
+  const prog=Math.round((dag/84)*100);
+  document.getElementById('prog-bar').style.width=prog+'%';
+  document.getElementById('prog-pct').textContent=prog+'%';
+
+  // Kaarten
+  document.querySelectorAll('.kaart').forEach(k=>k.classList.remove('active'));
+
+  if(kaart===0){
+    const el=document.getElementById('k-quote');
+    el.classList.toggle('mijlpaal',mijl);
+    document.getElementById('q-dag').textContent=mijl?'Mijlpaal — Dag '+dag:'Dag '+dag;
+    document.getElementById('q-tekst').textContent=QUOTES[idx]||'';
+    el.classList.add('active');
+  } else if(kaart===1){
+    document.getElementById('w-tekst').textContent=WETENSCHAP[idx]||'';
+    document.getElementById('k-wetenschap').classList.add('active');
+  } else if(kaart===2){
+    document.getElementById('k-besparing').classList.add('active');
+    animeerTeller(bespaard);
+  }
+
+  // Dots
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('act',i===kaart));
+}
+
+function volgende(){
+  const dag=getCurrentDay();
+  currentCard=(currentCard+1)%3;
+  toonKaart(dag,currentCard);
+}
+
+function vorige(){
+  const dag=getCurrentDay();
+  currentCard=(currentCard+2)%3;
+  toonKaart(dag,currentCard);
+}
+
+let tellerAnim=null;
+function animeerTeller(doel){
+  const el=document.getElementById('teller-bedrag');
+  if(tellerAnim) clearInterval(tellerAnim);
+  let huidig=0;
+  const stap=doel/60;
+  tellerAnim=setInterval(()=>{
+    huidig=Math.min(huidig+stap,doel);
+    el.textContent=formatEuro(huidig);
+    if(huidig>=doel) clearInterval(tellerAnim);
+  },16);
+}
+
+function showEindscherm(){
+  const dag=getCurrentDay();
+  const ppd=getPricePerDay();
+  const bespaard=dag*ppd;
+  document.getElementById('eind-bespaard').textContent=formatEuro(bespaard);
+  document.getElementById('eind-dagen').textContent=dag>84?dag:84;
+  showScreen('s-eind');
+  setTimeout(()=>animeerTellerEind(bespaard),400);
+}
+
+function animeerTellerEind(doel){
+  const el=document.getElementById('eind-teller');
+  let h=0; const stap=doel/80;
+  const t=setInterval(()=>{
+    h=Math.min(h+stap,doel);
+    el.textContent=formatEuro(h);
+    if(h>=doel) clearInterval(t);
+  },16);
+}
+
+window.addEventListener('load', init);
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.warn(e));});}
+</script>
+</body>
+</html>
