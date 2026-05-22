@@ -61,25 +61,17 @@ input:focus{outline:none;border-color:var(--rood);background:var(--wit);}
 .prog-bg{flex:1;height:6px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden;}
 .prog-fill{height:100%;background:var(--wit);border-radius:3px;transition:width .5s;}
 .prog-pct{font-size:12px;color:rgba(255,255,255,.75);min-width:30px;text-align:right;}
-.kaarten{flex:1;position:relative;overflow:hidden;}
-.kaart{position:absolute;inset:0;display:none;flex-direction:column;padding:24px 20px;gap:16px;}
-.kaart.active{display:flex;}
-.kaart-label{font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:.8px;color:#aaa;}
-.kaart.mijlpaal .kaart-label{color:var(--rood);}
-.k-quote-dag{font-size:13px;font-weight:bold;color:var(--rood);margin-bottom:4px;}
-.k-quote-tekst{font-size:18px;line-height:1.6;color:var(--zwart);flex:1;display:flex;align-items:center;}
-.k-wet-icon{font-size:36px;margin-bottom:4px;}
-.k-wet-tekst{font-size:15px;line-height:1.7;color:var(--zwart);flex:1;}
-.besparing-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
-.besparing-label{font-size:14px;color:#888;}
-.besparing-bedrag{font-size:52px;font-weight:bold;color:var(--rood);letter-spacing:-1px;}
-.besparing-hint{font-size:13px;color:#aaa;text-align:center;margin-top:4px;}
-.dag-nav{padding:12px 20px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.nav-btn{width:48px;height:48px;border-radius:50%;border:1.5px solid #ddd;background:var(--wit);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.nav-btn:active{background:var(--zand);}
-.dots{display:flex;gap:8px;}
-.dot{width:8px;height:8px;border-radius:50%;background:#ddd;transition:all .2s;}
-.dot.act{background:var(--rood);width:20px;border-radius:4px;}
+.dag-inhoud{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
+.blok{background:var(--wit);border-radius:14px;padding:16px 18px;border:1px solid #ece9e2;}
+.blok-label{font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:.8px;color:var(--rood);margin-bottom:8px;}
+.blok-dag{font-size:12px;color:#aaa;margin-bottom:4px;}
+.blok-tekst{font-size:16px;line-height:1.55;color:var(--zwart);}
+.blok-wet{font-size:13.5px;line-height:1.6;color:#444;}
+.blok-besparing{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bes-label{font-size:13px;color:#888;}
+.bes-bedrag{font-size:42px;font-weight:bold;color:var(--rood);letter-spacing:-1px;line-height:1.1;}
+.bes-hint{font-size:11px;color:#bbb;}
+.mijlpaal-badge{display:inline-block;background:var(--rood);color:var(--wit);font-size:10px;font-weight:bold;padding:3px 10px;border-radius:20px;margin-bottom:6px;}
 
 /* EINDSCHERM */
 .eind-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;gap:20px;}
@@ -188,12 +180,7 @@ input:focus{outline:none;border-color:var(--rood);background:var(--wit);}
       </div>
     </div>
   </div>
-  <div class="dag-nav">
-    <button class="nav-btn" onclick="vorige()">&#8592;</button>
-    <div class="dots"><div class="dot act"></div><div class="dot"></div><div class="dot"></div></div>
-    <button class="nav-btn" onclick="volgende()">&#8594;</button>
-    <div class="footer"><p>Made by M. Van Dam &mdash; VIVES Hogeschool</p></div>
-</div>
+  <div class="footer"><p>Made by M. Van Dam &mdash; VIVES Hogeschool</p></div>
 </div>
 
 <!-- EINDSCHERM -->
@@ -482,53 +469,30 @@ function showDagscherm(){
     return;
   }
   currentCard=0;
-  toonKaart(dag,0);
+  toonKaart(dag);
   showScreen('s-dag');
 }
 
-function toonKaart(dag,kaart){
+function toonKaart(dag){
   const idx=dag-1;
   const ppd=getPricePerDay();
   const bespaard=dag*ppd;
   const mijl=isMijlpaal(dag);
 
-  // Dag indicator
   document.getElementById('dag-num').textContent='Dag '+dag+' van 84';
   const prog=Math.round((dag/84)*100);
   document.getElementById('prog-bar').style.width=prog+'%';
   document.getElementById('prog-pct').textContent=prog+'%';
 
-  // Kaarten
-  document.querySelectorAll('.kaart').forEach(k=>k.classList.remove('active'));
-
-  if(kaart===0){
-    const el=document.getElementById('k-quote');
-    el.classList.toggle('mijlpaal',mijl);
-    document.getElementById('q-dag').textContent=mijl?'Mijlpaal — Dag '+dag:'Dag '+dag;
-    document.getElementById('q-tekst').textContent=QUOTES[idx]||'';
-    el.classList.add('active');
-  } else if(kaart===1){
-    document.getElementById('w-tekst').textContent=WETENSCHAP[idx]||'';
-    document.getElementById('k-wetenschap').classList.add('active');
-  } else if(kaart===2){
-    document.getElementById('k-besparing').classList.add('active');
-    animeerTeller(bespaard);
+  const qEl=document.getElementById('k-quote');
+  if(mijl){
+    document.getElementById('q-dag').innerHTML='<span class="mijlpaal-badge">Mijlpaal — Dag '+dag+'</span>';
+  } else {
+    document.getElementById('q-dag').textContent='Dag '+dag;
   }
-
-  // Dots
-  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('act',i===kaart));
-}
-
-function volgende(){
-  const dag=getCurrentDay();
-  currentCard=(currentCard+1)%3;
-  toonKaart(dag,currentCard);
-}
-
-function vorige(){
-  const dag=getCurrentDay();
-  currentCard=(currentCard+2)%3;
-  toonKaart(dag,currentCard);
+  document.getElementById('q-tekst').textContent=QUOTES[idx]||'';
+  document.getElementById('w-tekst').textContent=WETENSCHAP[idx]||'';
+  animeerTeller(bespaard);
 }
 
 let tellerAnim=null;
@@ -565,6 +529,9 @@ function animeerTellerEind(doel){
 }
 
 window.addEventListener('load', init);
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.warn(e));});}
 </script>
 </body>
 </html>
