@@ -379,7 +379,9 @@ function getPricePerDay(){ return parseFloat(localStorage.getItem('ofv_ppd')||'0
 function getCurrentDay(){
   const s=getStartDate();
   if(!s) return 1;
-  const diff=Math.floor((new Date()-s)/86400000)+1;
+  const vandaag=new Date(); vandaag.setHours(0,0,0,0);
+  const start=new Date(s); start.setHours(0,0,0,0);
+  const diff=Math.floor((vandaag-start)/86400000)+1;
   return Math.max(1,diff);
 }
 function isMijlpaal(d){ return MIJLPALEN.includes(d); }
