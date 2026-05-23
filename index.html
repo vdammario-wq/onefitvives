@@ -81,13 +81,17 @@ input:focus{outline:none;border-color:var(--rood);background:var(--wit);}
 .help-opties{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
 .help-opt{display:flex;align-items:center;gap:8px;background:#f5f4f0;border:none;border-radius:12px;padding:12px 14px;font-size:13px;font-weight:600;color:var(--zwart);cursor:pointer;width:100%;text-align:left;}
 .help-opt-rood{background:var(--rood);color:var(--wit);}
-.help-sluit{width:100%;background:none;border:1px solid #ddd;border-radius:10px;padding:8px;font-size:12px;color:#888;cursor:pointer;}
 .adem-overlay{position:absolute;inset:0;background:#1e1e1e;display:flex;align-items:center;justify-content:center;z-index:30;border-radius:28px;}
 .adem-panel{display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 18px;width:100%;}
 .adem-intro{font-size:13px;color:rgba(255,255,255,.8);text-align:center;line-height:1.6;}
-.cirkel-wrap{position:relative;width:110px;height:110px;display:flex;align-items:center;justify-content:center;}
-.cirkel{width:70px;height:70px;border-radius:50%;background:var(--rood);transition:width .4s ease,height .4s ease;}
-.cirkel-txt{position:absolute;font-size:10px;font-weight:700;color:var(--wit);text-align:center;pointer-events:none;}
+.cirkel-wrap{width:140px;height:140px;display:flex;align-items:center;justify-content:center;}
+.cirkel{width:70px;height:70px;border-radius:50%;background:var(--rood);transition:width 1s ease,height 1s ease;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cirkel-vives{font-size:16px;font-weight:900;color:var(--wit);letter-spacing:.8px;transition:font-size 1s ease;pointer-events:none;white-space:nowrap;}
+.adem-uitleg{background:rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;margin:14px 0;display:flex;flex-direction:column;gap:8px;width:100%;}
+.uitleg-rij{display:flex;align-items:baseline;gap:10px;}
+.uitleg-sec{font-size:15px;font-weight:900;color:var(--rood);min-width:46px;flex-shrink:0;}
+.uitleg-txt{font-size:13px;color:#efeee9;line-height:1.4;}
+.uitleg-sub{font-size:11px;color:rgba(255,255,255,.5);}
 .fase-lbl{font-size:13px;color:#efeee9;font-weight:700;text-align:center;}
 .fase-timer{font-size:42px;font-weight:900;color:var(--rood);text-align:center;line-height:1;}
 .ronde-lbl{font-size:10px;color:rgba(255,255,255,.4);text-align:center;}
@@ -214,26 +218,43 @@ input:focus{outline:none;border-color:var(--rood);background:var(--wit);}
         <button class="help-opt" onclick="whatsappBuddy()">💬&nbsp; Stuur mijn buddy een WhatsApp</button>
         <button class="help-opt help-opt-rood" onclick="startAdem()">🫁&nbsp; Ademhalingsoefening</button>
       </div>
-      <button class="help-sluit" onclick="sluitHelp()">Sluiten — ik red het zelf</button>
     </div>
   </div>
 
   <!-- ADEMHALING OVERLAY -->
   <div class="adem-overlay hidden" id="ademOverlay">
     <div class="adem-panel">
-      <div class="adem-intro" id="adem-intro">Oké. 2 minuten ademhalen.<br>De trek zakt weg — beloofd.</div>
-      <div class="cirkel-wrap">
-        <div class="cirkel" id="cirkel"></div>
-        <div class="cirkel-txt" id="cirkel-txt"></div>
+
+      <!-- INSTRUCTIESCHERM -->
+      <div id="adem-instructie">
+        <div class="adem-intro">Oké, we doen 2 minuten ademhalen.<br>Dit verlaagt je stress en de trek zakt vaak weg.</div>
+        <div class="adem-uitleg">
+          <div class="uitleg-rij"><span class="uitleg-sec">4 sec</span><span class="uitleg-txt">Inademen door je neus <span class="uitleg-sub">(cirkel groeit)</span></span></div>
+          <div class="uitleg-rij"><span class="uitleg-sec">7 sec</span><span class="uitleg-txt">Vasthouden</span></div>
+          <div class="uitleg-rij"><span class="uitleg-sec">8 sec</span><span class="uitleg-txt">Uitademen door je mond <span class="uitleg-sub">(cirkel krimpt)</span></span></div>
+        </div>
+        <button class="help-opt help-opt-rood" onclick="beginAdem()" style="width:100%;justify-content:center;font-size:15px;padding:14px;">Start</button>
       </div>
-      <div class="fase-lbl" id="fase-lbl"></div>
-      <div class="fase-timer" id="fase-timer"></div>
-      <div class="ronde-lbl" id="ronde-lbl"></div>
-      <button class="adem-stop" onclick="stopAdem()">Stop</button>
+
+      <!-- ANIMATIE -->
+      <div id="adem-animatie" class="hidden">
+        <div class="cirkel-wrap">
+          <div class="cirkel" id="cirkel">
+            <span class="cirkel-vives" id="cirkel-vives">VIVES</span>
+          </div>
+        </div>
+        <div class="fase-lbl" id="fase-lbl"></div>
+        <div class="fase-timer" id="fase-timer"></div>
+        <div class="ronde-lbl" id="ronde-lbl"></div>
+        <button class="adem-stop" onclick="stopAdem()">Stop</button>
+      </div>
+
+      <!-- KLAAR -->
       <div class="adem-klaar hidden" id="adem-klaar">
         <div class="klaar-txt">Goed gedaan! Hou nu opnieuw vol — jij bent sterker dan die trek.</div>
         <button class="help-opt help-opt-rood" onclick="sluitAdem()" style="width:100%;margin-top:12px;">Terug naar mijn dag</button>
       </div>
+
     </div>
   </div>
   <div class="footer"><p>Made by M. Van Dam &mdash; VIVES Hogeschool</p></div>
@@ -623,32 +644,53 @@ let huidigeFase=0, huidigeRonde=1, huidigeTeller=0;
 function startAdem(){
   document.getElementById('helpOverlay').classList.add('hidden');
   document.getElementById('ademOverlay').classList.remove('hidden');
+  document.getElementById('adem-instructie').classList.remove('hidden');
+  document.getElementById('adem-animatie').classList.add('hidden');
   document.getElementById('adem-klaar').classList.add('hidden');
-  document.getElementById('adem-intro').style.display='block';
-  document.getElementById('adem-stop').style.display='block';
-  document.querySelector('.cirkel-wrap').style.display='flex';
-  document.querySelector('.fase-lbl').style.display='block';
-  document.querySelector('.fase-timer').style.display='block';
-  document.querySelector('.ronde-lbl').style.display='block';
-  huidigeFase=0; huidigeRonde=1;
-  setTimeout(()=>{
-    document.getElementById('adem-intro').style.display='none';
-    runFase();
-  },2000);
 }
+
+function beginAdem(){
+  document.getElementById('adem-instructie').classList.add('hidden');
+  document.getElementById('adem-animatie').classList.remove('hidden');
+  huidigeFase=0; huidigeRonde=1;
+  runFase();
+}
+
+const BOL_MIN=52, BOL_MAX=120;
 
 function runFase(){
   if(huidigeRonde>RONDES){ eindeAdem(); return; }
   const fase=FASES[huidigeFase];
   huidigeTeller=fase.duur;
-  setCirkel(fase.cirkel, fase.txt);
   document.getElementById('fase-lbl').textContent=fase.lbl;
   document.getElementById('fase-timer').textContent=huidigeTeller;
   document.getElementById('ronde-lbl').textContent='Ronde '+huidigeRonde+' van '+RONDES;
+
+  // Bereken startgrootte op basis van vorige fase
+  const huidigePx=parseInt(document.getElementById('cirkel').style.width)||BOL_MIN;
+
   clearInterval(ademInterval);
   ademInterval=setInterval(()=>{
     huidigeTeller--;
     document.getElementById('fase-timer').textContent=huidigeTeller;
+
+    // Groei of krimp per seconde
+    const fase=FASES[huidigeFase];
+    const duur=fase.duur;
+    const verstreken=duur-huidigeTeller;
+    let px;
+    if(fase.cirkel==='groot'){
+      // Inademen: groeit van MIN naar MAX over duur seconden
+      px=Math.round(BOL_MIN+(BOL_MAX-BOL_MIN)*(verstreken/duur));
+    } else if(fase.cirkel==='vast'){
+      // Vasthouden: blijft op MAX
+      px=BOL_MAX;
+    } else {
+      // Uitademen: krimpt van MAX naar MIN over duur seconden
+      px=Math.round(BOL_MAX-(BOL_MAX-BOL_MIN)*(verstreken/duur));
+    }
+    setBolGrootte(px);
+
     if(huidigeTeller<=0){
       clearInterval(ademInterval);
       huidigeFase=(huidigeFase+1)%3;
@@ -656,24 +698,29 @@ function runFase(){
       runFase();
     }
   },1000);
+
+  // Meteen eerste stap zetten
+  if(fase.cirkel==='groot') setBolGrootte(BOL_MIN);
+  else if(fase.cirkel==='vast') setBolGrootte(BOL_MAX);
+  else setBolGrootte(BOL_MAX);
 }
 
-function setCirkel(staat, txt){
+function setCirkel(staat){
+  // wordt nu afgehandeld door runFase via stap-voor-stap groei
+}
+
+function setBolGrootte(px){
   const c=document.getElementById('cirkel');
-  const ct=document.getElementById('cirkel-txt');
-  ct.textContent=txt;
-  if(staat==='groot'){ c.style.width='95px'; c.style.height='95px'; c.style.opacity='1'; }
-  else if(staat==='vast'){ c.style.width='95px'; c.style.height='95px'; c.style.opacity='.85'; }
-  else { c.style.width='48px'; c.style.height='48px'; c.style.opacity='.6'; }
+  const v=document.getElementById('cirkel-vives');
+  const fs=Math.round(7 + (px-52)/68*14); // schaal fontsize mee: 7px bij 52px, 21px bij 120px
+  c.style.width=px+'px';
+  c.style.height=px+'px';
+  v.style.fontSize=fs+'px';
 }
 
 function eindeAdem(){
   clearInterval(ademInterval);
-  document.querySelector('.cirkel-wrap').style.display='none';
-  document.querySelector('.fase-lbl').style.display='none';
-  document.querySelector('.fase-timer').style.display='none';
-  document.querySelector('.ronde-lbl').style.display='none';
-  document.getElementById('adem-stop').style.display='none';
+  document.getElementById('adem-animatie').classList.add('hidden');
   document.getElementById('adem-klaar').classList.remove('hidden');
 }
 
@@ -687,9 +734,6 @@ function sluitAdem(){
 }
 
 window.addEventListener('load', init);
-</script>
-<script>
-if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.warn(e));});}
 </script>
 </body>
 </html>
