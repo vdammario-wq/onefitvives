@@ -1,12 +1,12 @@
 {
   "name": "OneFitVIVES",
   "short_name": "OneFitVIVES",
-  "description": "Rookstopchallenge — 84 dagen — VIVES Hogeschool",
+  "description": "Rookstopchallenge by VIVES",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#efeee9",
   "theme_color": "#e00020",
-  "orientation": "portrait-primary",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icon-192.png",
