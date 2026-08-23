@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -71,12 +71,6 @@ input:focus{outline:none;border-color:var(--ink);background:var(--wit);}
 .vapesub-btn{flex:1;padding:11px 6px;border:1px solid var(--lijn);border-radius:999px;background:var(--wit);font-family:inherit;font-size:13px;font-weight:600;color:var(--grijs);cursor:pointer;text-align:center;}
 .vapesub-btn.sel{border-color:var(--rood);background:var(--rood-licht);color:var(--rood-d);}
 
-.icoonkeuze{display:flex;gap:10px;}
-.ik-btn{flex:1;border:1px solid var(--lijn);border-radius:14px;background:var(--wit);padding:12px 10px;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;}
-.ik-btn.sel{border-color:var(--rood);background:var(--rood-licht);}
-.ik-btn img{width:52px;height:52px;border-radius:12px;display:block;}
-.ik-btn span{font-size:12.5px;font-weight:600;color:var(--grijs);}
-.ik-btn.sel span{color:var(--rood-d);}
 
 /* DAGSCHERM */
 .dag-hdr{padding:18px 24px 14px;padding:clamp(12px,2.2cqh,18px) 24px clamp(10px,1.8cqh,14px);border-bottom:1px solid var(--lijn);flex-shrink:0;display:flex;flex-direction:column;gap:14px;}
@@ -267,14 +261,6 @@ input:focus{outline:none;border-color:var(--ink);background:var(--wit);}
       <div class="fg">
         <label class="fl">Wanneer ben je gestopt? <span class="fl-hint">(vandaag, of een datum in het verleden als je opnieuw installeert)</span></label>
         <input type="date" id="start-datum">
-      </div>
-      <div class="fg">
-        <label class="fl">Welk pictogram wil je op je beginscherm? <span class="fl-hint">(kies nu — na het toevoegen staat het vast)</span></label>
-        <div class="icoonkeuze">
-          <button type="button" class="ik-btn sel" id="ik-grijs" onclick="kiesIcoon('grijs')"><img src="icon-192.png" alt="grijs pictogram"><span>Rustig</span></button>
-          <button type="button" class="ik-btn" id="ik-rood" onclick="kiesIcoon('rood')"><img src="icon-192-rood.png" alt="rood pictogram"><span>Opvallend</span></button>
-        </div>
-        <div class="fl-hint hidden" id="ik-melding" style="line-height:1.55;margin-top:10px;color:var(--rood-d);">Keuze bewaard. Sluit de app en open hem opnieuw voordat je hem op je beginscherm zet, anders krijg je nog het vorige pictogram.</div>
       </div>
     </div>
   </div>
@@ -978,45 +964,8 @@ document.addEventListener('touchend',e=>{
   if(dx>70 && document.getElementById('s-komt').classList.contains('active')) sluitKomt();
 },{passive:true});
 
-function kiesIcoon(k){
-  const geladen = window.ICOON_BIJ_LADEN || 'grijs';
-  localStorage.setItem('ofv_icoon', k);
-  document.getElementById('ik-grijs').classList.toggle('sel', k==='grijs');
-  document.getElementById('ik-rood').classList.toggle('sel', k==='rood');
-  pasIcoonToe();
-  // de browser leest het manifest enkel bij het laden van de pagina
-  const m=document.getElementById('ik-melding');
-  if(m) m.classList.toggle('hidden', k===geladen);
-}
 
-function pasIcoonToe(){
-  const rood = localStorage.getItem('ofv_icoon')==='rood';
-  const suffix = rood?'-rood':'';
-  // manifest volledig vervangen: enkel href aanpassen wordt door de browser genegeerd
-  const oud=document.querySelector('link[rel="manifest"]');
-  if(oud) oud.remove();
-  const link=document.createElement('link');
-  link.rel='manifest';
-  link.href=(rood?'manifest-rood.json':'manifest.json');
-  document.head.appendChild(link);
-  // iOS leest apple-touch-icon pas bij 'Zet op beginscherm'
-  document.querySelectorAll('link[rel="apple-touch-icon"]').forEach(n=>n.remove());
-  const at=document.createElement('link');
-  at.rel='apple-touch-icon';
-  at.setAttribute('sizes','192x192');
-  at.href='icon-192'+suffix+'.png';
-  document.head.appendChild(at);
-  document.querySelector('meta[name="theme-color"]').setAttribute('content','#f7f7f5');
-}
 
-function herstelIcoonKeuze(){
-  const k=localStorage.getItem('ofv_icoon')||'grijs';
-  window.ICOON_BIJ_LADEN=k;
-  const g=document.getElementById('ik-grijs'), r=document.getElementById('ik-rood');
-  if(g&&r){ g.classList.toggle('sel',k==='grijs'); r.classList.toggle('sel',k==='rood'); }
-  pasIcoonToe();
-}
-herstelIcoonKeuze();
 
 function animeerTellerEind(doel){
   const el=document.getElementById('vrij-bedrag');
