@@ -220,7 +220,7 @@ input:focus{outline:none;border-color:var(--ink);background:var(--wit);}
     </div>
   </div>
   <div class="bot">
-    <button class="btn-start" onclick="startApp()">Ik start vandaag</button>
+    <button class="btn-start" onclick="startApp()">Aan de slag</button>
     <div class="footer"><p>Made by M. Van Dam &mdash; VIVES Hogeschool</p></div>
   </div>
 </div>
@@ -272,7 +272,7 @@ input:focus{outline:none;border-color:var(--ink);background:var(--wit);}
       <div class="fg"><label class="fl">Telefoonnummer van je buddy</label><input type="tel" id="buddy-tel" placeholder="Bv. 0470 12 34 56" inputmode="tel"></div>
       <div class="fl-hint" style="line-height:1.55;">Via Help! bel je hem of haar met één tik, of stuur je een bericht via WhatsApp.</div>
       <div class="fg">
-        <label class="fl">Wanneer ben je gestopt? <span class="fl-hint">(vandaag, of een datum in het verleden als je opnieuw installeert)</span></label>
+        <label class="fl">Wanneer stop je? <span class="fl-hint">(vandaag staat al ingevuld, je kunt ook een andere datum kiezen)</span></label>
         <input type="date" id="start-datum">
       </div>
     </div>
@@ -310,7 +310,7 @@ input:focus{outline:none;border-color:var(--ink);background:var(--wit);}
       <div id="q-tekst" class="quote-txt"></div>
     </div>
     <div class="wet-blok">
-      <div class="wet-lbl">Wetenschap</div>
+      <div class="wet-lbl" id="w-lbl">Wetenschap</div>
       <div id="w-tekst" class="wet-txt"></div>
     </div>
   </div>
@@ -420,7 +420,7 @@ input:focus{outline:none;border-color:var(--ink);background:var(--wit);}
   <button class="help-sluit" onclick="sluitHelp()">Het is voorbij</button>
   <button class="help-datum-link" id="help-datum" onclick="toonDatumForm()">Stopdatum aanpassen</button>
   <div class="help-buddy-set help-datum-set" id="help-datum-set">
-    <div class="hbs-lbl">Wanneer ben je gestopt? Kies vandaag of een datum in het verleden.</div>
+    <div class="hbs-lbl">Kies je stopdatum. Dat mag vandaag zijn, een datum in het verleden of een datum later.</div>
     <input type="date" id="hds-datum">
     <button class="hbs-save" onclick="bewaarDatum()">Bewaar de datum</button>
   </div>
@@ -703,7 +703,7 @@ function toonDatumForm(){
   const el=document.getElementById('hds-datum');
   const vandaag=datumNaarInput(new Date());
   const s=getStartDate();
-  el.max=vandaag;
+  el.max=datumNaarInput(new Date(Date.now()+365*86400000));
   el.value=s?datumNaarInput(s):vandaag;
   const set=document.getElementById('help-datum-set');
   set.classList.add('on');
@@ -715,7 +715,7 @@ function bewaarDatum(){
   const el=document.getElementById('hds-datum');
   const v=el.value;
   const d=v?new Date(v+'T00:00:00'):null;
-  if(!d || isNaN(d) || d>new Date()){ el.focus(); return; }
+  if(!d || isNaN(d)){ el.focus(); return; }
   localStorage.setItem('ofv_start', d.toISOString());
   verbergDatumForm();
   sluitHelp();
@@ -804,11 +804,13 @@ function stopAdem(){
 }
 
 function startApp(){
+  const sd=document.getElementById('start-datum');
+  if(sd) sd.max=datumNaarInput(new Date(Date.now()+365*86400000));
   const el=document.getElementById('start-datum');
   if(el && !el.value){
     const t=new Date(), p=n=>String(n).padStart(2,'0');
     const vandaag=t.getFullYear()+'-'+p(t.getMonth()+1)+'-'+p(t.getDate());
-    el.value=vandaag; el.max=vandaag;
+    el.value=vandaag;
   }
   showScreen('s-type');
 }
@@ -865,14 +867,38 @@ function berekenEnStart(){
   let start=new Date(); start.setHours(0,0,0,0);
   if(dv){
     const d=new Date(dv+'T00:00:00');
-    if(!isNaN(d) && d<=new Date()) start=d;
+    if(!isNaN(d)) start=d;
   }
   localStorage.setItem('ofv_start', start.toISOString());
   localStorage.setItem('ofv_started', '1');
   showDagscherm();
 }
 
+function dagenTotStart(){
+  const s=getStartDate(); if(!s) return 0;
+  const rest=Math.ceil((s-new Date())/86400000);
+  return rest>0?rest:0;
+}
+
+function toonWacht(n){
+  const s=getStartDate();
+  const datum=s.toLocaleDateString('nl-BE',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('dag-num').textContent='Nog '+n+(n===1?' dag':' dagen');
+  document.getElementById('prog-bar').style.width='0%';
+  document.getElementById('prog-pct').textContent='0%';
+  document.getElementById('q-dag').textContent='Bijna';
+  document.getElementById('q-tekst').textContent='Op '+datum+' begin je aan je 84 dagen rookvrij. Vanaf dan krijg je hier elke dag een nieuwe tekst.';
+  document.getElementById('w-lbl').textContent='Tip';
+  document.getElementById('w-tekst').textContent='Gebruik de dagen tot dan om je voor te bereiden. Haal sigaretten, aanstekers en asbakken uit je huis en je auto, en bedenk wat je doet op de momenten waarop je anders rookt.';
+  if(tellerAnim) clearInterval(tellerAnim);
+  document.getElementById('teller-bedrag').textContent=formatEuro(0);
+  showScreen('s-dag');
+}
+
 function showDagscherm(){
+  const wacht=dagenTotStart();
+  if(wacht>0){ toonWacht(wacht); return; }
+  document.getElementById('w-lbl').textContent='Wetenschap';
   const dag=getCurrentDay();
   if(dag>84){
     showVrijModus();
